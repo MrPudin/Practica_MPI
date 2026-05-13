@@ -1,0 +1,251 @@
+-------------------------------------------------------------
+ -1   2   3  55   6  44  33  34   4  55 
+  5  -1  11  21  12  14  11  12  10  19 
+ 34  -1  -1  22  22  34  41  12  60   9 
+ 24   2  11  -1  82  84  21  12  16  19 
+  4   3  21  13  -1  34  43  12  15  29 
+ 14   5  20  53  82  -1  41  12  50  19 
+  4  11  66  63  92  30  -1  22  12  39 
+ 22  32  12  73  22  34  41  -1  14  49 
+ 24  12  16  13  22  20  20  22  -1  39 
+ 54  15  66  53  52  35  10  42  42  -1 
+-------------------------------------------------------------
+[calcular_soluciones] Procesando nodo            1 (1), pendientes:0,  CS:9999 -> ci=0 : 
+[calcular_soluciones] Procesando nodo            2 (3), pendientes:1,  CS:9999 -> ci=93 : <0,1> 
+[calcular_soluciones] Procesando nodo            4 (5), pendientes:2,  CS:9999 -> ci=106 : <0,1> <1,4> 
+[calcular_soluciones] Procesando nodo            6 (7), pendientes:3,  CS:9999 -> ci=106 : <0,1> <1,4> <2,9> 
+[calcular_soluciones] Procesando nodo            8 (9), pendientes:4,  CS:9999 -> ci=106 : <0,1> <1,4> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo           10 (11), pendientes:5,  CS:9999 -> ci=108 : <0,1> <1,4> <2,9> <3,2> <4,7> 
+[calcular_soluciones] Procesando nodo           12 (13), pendientes:6,  CS:9999 -> ci=116 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> 
+[calcular_soluciones] Procesando nodo           14 (15), pendientes:7,  CS:9999 -> ci=143 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> <6,8> 
+
+[calcular_soluciones] Encontrada solución righ 17 (CS:175) -> ci=175 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> <6,8> <7,3> <8,5> <9,6> 
+
+[calcular_soluciones] Encontrada solución left 16 (CS:161) -> ci=161 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> <6,8> <7,6> <8,3> <9,5> 
+[calcular_soluciones] Procesando nodo           15 (17), pendientes:6,  CS:161 -> ci=127 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> !<6,8> 
+[calcular_soluciones] Procesando nodo           18 (19), pendientes:6,  CS:161 -> ci=127 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> <6,5> 
+
+[calcular_soluciones] Encontrada solución left 20 (CS:127) -> ci=127 : <0,1> <1,4> <2,9> <3,2> <4,7> <5,0> <6,5> <7,8> <8,3> <9,6> 
+[calcular_soluciones] Procesando nodo           13 (21), pendientes:5,  CS:127 -> ci=135 : <0,1> <1,4> <2,9> <3,2> <4,7> !<5,0> 
+[calcular_soluciones] Procesando nodo           11 (23), pendientes:4,  CS:127 -> ci=107 : <0,1> <1,4> <2,9> <3,2> !<4,7> 
+[calcular_soluciones] Procesando nodo           24 (25), pendientes:5,  CS:127 -> ci=107 : <0,1> <1,4> <2,9> <3,2> <4,3> 
+[calcular_soluciones] Procesando nodo           26 (27), pendientes:6,  CS:127 -> ci=107 : <0,1> <1,4> <2,9> <3,2> <4,3> <5,7> 
+[calcular_soluciones] Procesando nodo           29 (29), pendientes:6,  CS:127 -> ci=119 : <0,1> <1,4> <2,9> <3,2> <4,3> <5,7> !<6,0> 
+[calcular_soluciones] Procesando nodo           30 (31), pendientes:6,  CS:127 -> ci=123 : <0,1> <1,4> <2,9> <3,2> <4,3> <5,7> <6,8> 
+
+[calcular_soluciones] Encontrada solución left 32 (CS:123) -> ci=123 : <0,1> <1,4> <2,9> <3,2> <4,3> <5,7> <6,8> <7,0> <8,5> <9,6> 
+[calcular_soluciones] Procesando nodo           27 (33), pendientes:5,  CS:123 -> ci=111 : <0,1> <1,4> <2,9> <3,2> <4,3> !<5,7> 
+[calcular_soluciones] Procesando nodo           34 (35), pendientes:5,  CS:123 -> ci=119 : <0,1> <1,4> <2,9> <3,2> <4,3> <5,0> 
+[calcular_soluciones] Procesando nodo           25 (37), pendientes:4,  CS:123 -> ci=109 : <0,1> <1,4> <2,9> <3,2> !<4,7> !<4,3> 
+[calcular_soluciones] Procesando nodo           38 (39), pendientes:5,  CS:123 -> ci=117 : <0,1> <1,4> <2,9> <3,2> <4,8> 
+[calcular_soluciones] Procesando nodo           40 (41), pendientes:5,  CS:123 -> ci=117 : <0,1> <1,4> <2,9> <3,2> <4,8> <5,7> 
+[calcular_soluciones] Procesando nodo           39 (43), pendientes:4,  CS:123 -> ci=121 : <0,1> <1,4> <2,9> <3,2> !<4,7> !<4,3> !<4,8> 
+[calcular_soluciones] Procesando nodo           44 (45), pendientes:4,  CS:123 -> ci=121 : <0,1> <1,4> <2,9> <3,2> <4,5> 
+[calcular_soluciones] Procesando nodo           46 (47), pendientes:4,  CS:123 -> ci=121 : <0,1> <1,4> <2,9> <3,2> <4,5> <5,7> 
+[calcular_soluciones] Procesando nodo           48 (49), pendientes:4,  CS:123 -> ci=121 : <0,1> <1,4> <2,9> <3,2> <4,5> <5,7> <6,0> 
+
+[calcular_soluciones] Encontrada solución left 50 (CS:121) -> ci=121 : <0,1> <1,4> <2,9> <3,2> <4,5> <5,7> <6,0> <7,8> <8,3> <9,6> 
+[calcular_soluciones] Procesando nodo            9 (51), pendientes:3,  CS:121 -> ci=107 : <0,1> <1,4> <2,9> !<3,2> 
+[calcular_soluciones] Procesando nodo           52 (53), pendientes:4,  CS:121 -> ci=110 : <0,1> <1,4> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo           54 (55), pendientes:5,  CS:121 -> ci=110 : <0,1> <1,4> <2,9> <3,7> <4,3> 
+[calcular_soluciones] Procesando nodo           56 (57), pendientes:6,  CS:121 -> ci=116 : <0,1> <1,4> <2,9> <3,7> <4,3> <5,0> 
+[calcular_soluciones] Procesando nodo           58 (59), pendientes:6,  CS:121 -> ci=116 : <0,1> <1,4> <2,9> <3,7> <4,3> <5,0> <6,8> 
+
+[calcular_soluciones] Encontrada solución left 60 (CS:116) -> ci=116 : <0,1> <1,4> <2,9> <3,7> <4,3> <5,0> <6,8> <7,2> <8,5> <9,6> 
+[calcular_soluciones] Procesando nodo           57 (61), pendientes:5,  CS:116 -> ci=116 : <0,1> <1,4> <2,9> <3,7> <4,3> !<5,0> 
+[calcular_soluciones] Procesando nodo           55 (63), pendientes:4,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,7> !<4,3> 
+[calcular_soluciones] Procesando nodo           64 (65), pendientes:4,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,7> <4,8> 
+[calcular_soluciones] Procesando nodo           53 (67), pendientes:3,  CS:116 -> ci=109 : <0,1> <1,4> <2,9> !<3,2> !<3,7> 
+[calcular_soluciones] Procesando nodo           68 (69), pendientes:3,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,8> 
+[calcular_soluciones] Procesando nodo           70 (71), pendientes:3,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,8> <4,3> 
+[calcular_soluciones] Procesando nodo           72 (73), pendientes:3,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,8> <4,3> <5,7> 
+[calcular_soluciones] Procesando nodo           74 (75), pendientes:3,  CS:116 -> ci=110 : <0,1> <1,4> <2,9> <3,8> <4,3> <5,7> <6,0> 
+
+[calcular_soluciones] Encontrada solución left 76 (CS:110) -> ci=110 : <0,1> <1,4> <2,9> <3,8> <4,3> <5,7> <6,0> <7,2> <8,5> <9,6> 
+[calcular_soluciones] Procesando nodo            7 (77), pendientes:2,  CS:110 -> ci=116 : <0,1> <1,4> !<2,9> 
+[calcular_soluciones] Procesando nodo            5 (79), pendientes:1,  CS:110 -> ci=100 : <0,1> !<1,4> 
+[calcular_soluciones] Procesando nodo           80 (81), pendientes:2,  CS:110 -> ci=102 : <0,1> <1,5> 
+[calcular_soluciones] Procesando nodo           82 (83), pendientes:2,  CS:110 -> ci=102 : <0,1> <1,5> <2,9> 
+[calcular_soluciones] Procesando nodo           84 (85), pendientes:3,  CS:110 -> ci=102 : <0,1> <1,5> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo           86 (87), pendientes:4,  CS:110 -> ci=109 : <0,1> <1,5> <2,9> <3,2> <4,0> 
+[calcular_soluciones] Procesando nodo           87 (89), pendientes:3,  CS:110 -> ci=109 : <0,1> <1,5> <2,9> <3,2> !<4,0> 
+[calcular_soluciones] Procesando nodo           85 (91), pendientes:2,  CS:110 -> ci=103 : <0,1> <1,5> <2,9> !<3,2> 
+[calcular_soluciones] Procesando nodo           93 (93), pendientes:2,  CS:110 -> ci=105 : <0,1> <1,5> <2,9> !<3,2> !<3,7> 
+[calcular_soluciones] Procesando nodo           81 (95), pendientes:1,  CS:110 -> ci=103 : <0,1> !<1,4> !<1,5> 
+[calcular_soluciones] Procesando nodo           96 (97), pendientes:2,  CS:110 -> ci=103 : <0,1> <1,8> 
+[calcular_soluciones] Procesando nodo           98 (99), pendientes:2,  CS:110 -> ci=103 : <0,1> <1,8> <2,9> 
+[calcular_soluciones] Procesando nodo          100 (101), pendientes:3,  CS:110 -> ci=104 : <0,1> <1,8> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo          101 (103), pendientes:2,  CS:110 -> ci=104 : <0,1> <1,8> <2,9> !<3,2> 
+[calcular_soluciones] Procesando nodo          104 (105), pendientes:2,  CS:110 -> ci=106 : <0,1> <1,8> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo           97 (107), pendientes:1,  CS:110 -> ci=106 : <0,1> !<1,4> !<1,5> !<1,8> 
+[calcular_soluciones] Procesando nodo          108 (109), pendientes:2,  CS:110 -> ci=107 : <0,1> <1,2> 
+[calcular_soluciones] Procesando nodo          110 (111), pendientes:2,  CS:110 -> ci=106 : <0,1> <1,2> <2,9> 
+[calcular_soluciones] Procesando nodo          112 (113), pendientes:2,  CS:110 -> ci=108 : <0,1> <1,2> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          109 (115), pendientes:1,  CS:110 -> ci=106 : <0,1> !<1,4> !<1,5> !<1,8> !<1,2> 
+[calcular_soluciones] Procesando nodo          117 (117), pendientes:1,  CS:110 -> ci=107 : <0,1> !<1,4> !<1,5> !<1,8> !<1,2> !<1,6> 
+[calcular_soluciones] Procesando nodo          118 (119), pendientes:1,  CS:110 -> ci=109 : <0,1> <1,7> 
+[calcular_soluciones] Procesando nodo          120 (121), pendientes:1,  CS:110 -> ci=109 : <0,1> <1,7> <2,9> 
+[calcular_soluciones] Procesando nodo          122 (123), pendientes:1,  CS:110 -> ci=109 : <0,1> <1,7> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo            3 (125), pendientes:0,  CS:110 -> ci=86 : !<0,1> 
+[calcular_soluciones] Procesando nodo          126 (127), pendientes:1,  CS:110 -> ci=90 : <0,2> 
+[calcular_soluciones] Procesando nodo          128 (129), pendientes:2,  CS:110 -> ci=98 : <0,2> <1,0> 
+[calcular_soluciones] Procesando nodo          130 (131), pendientes:3,  CS:110 -> ci=108 : <0,2> <1,0> <2,7> 
+[calcular_soluciones] Procesando nodo          131 (133), pendientes:2,  CS:110 -> ci=98 : <0,2> <1,0> !<2,7> 
+[calcular_soluciones] Procesando nodo          134 (135), pendientes:2,  CS:110 -> ci=98 : <0,2> <1,0> <2,9> 
+[calcular_soluciones] Procesando nodo          136 (137), pendientes:3,  CS:110 -> ci=101 : <0,2> <1,0> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          139 (139), pendientes:3,  CS:110 -> ci=108 : <0,2> <1,0> <2,9> <3,1> !<4,7> 
+[calcular_soluciones] Procesando nodo          140 (141), pendientes:3,  CS:110 -> ci=108 : <0,2> <1,0> <2,9> <3,1> <4,3> 
+[calcular_soluciones] Procesando nodo          142 (143), pendientes:3,  CS:110 -> ci=102 : <0,2> <1,0> <2,9> <3,1> <4,3> <5,7> 
+[calcular_soluciones] Procesando nodo          144 (145), pendientes:3,  CS:110 -> ci=108 : <0,2> <1,0> <2,9> <3,1> <4,3> <5,7> <6,8> 
+
+[calcular_soluciones] Encontrada solución left 146 (CS:108) -> ci=108 : <0,2> <1,0> <2,9> <3,1> <4,3> <5,7> <6,8> <7,4> <8,5> <9,6> 
+[calcular_soluciones] Procesando nodo          137 (147), pendientes:2,  CS:108 -> ci=101 : <0,2> <1,0> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          148 (149), pendientes:2,  CS:108 -> ci=101 : <0,2> <1,0> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          129 (151), pendientes:1,  CS:108 -> ci=90 : <0,2> !<1,0> 
+[calcular_soluciones] Procesando nodo          152 (153), pendientes:2,  CS:108 -> ci=91 : <0,2> <1,4> 
+[calcular_soluciones] Procesando nodo          154 (155), pendientes:3,  CS:108 -> ci=99 : <0,2> <1,4> <2,1> 
+[calcular_soluciones] Procesando nodo          156 (157), pendientes:4,  CS:108 -> ci=106 : <0,2> <1,4> <2,1> <3,7> 
+[calcular_soluciones] Procesando nodo          158 (159), pendientes:4,  CS:108 -> ci=106 : <0,2> <1,4> <2,1> <3,7> <4,3> 
+[calcular_soluciones] Procesando nodo          161 (161), pendientes:4,  CS:108 -> ci=106 : <0,2> <1,4> <2,1> <3,7> <4,3> !<5,0> 
+[calcular_soluciones] Procesando nodo          162 (163), pendientes:4,  CS:108 -> ci=106 : <0,2> <1,4> <2,1> <3,7> <4,3> <5,9> 
+[calcular_soluciones] Procesando nodo          164 (165), pendientes:4,  CS:108 -> ci=106 : <0,2> <1,4> <2,1> <3,7> <4,3> <5,9> <6,0> 
+
+[calcular_soluciones] Encontrada solución left 166 (CS:106) -> ci=106 : <0,2> <1,4> <2,1> <3,7> <4,3> <5,9> <6,0> <7,8> <8,5> <9,6> 
+[calcular_soluciones] Procesando nodo          157 (167), pendientes:3,  CS:106 -> ci=105 : <0,2> <1,4> <2,1> !<3,7> 
+[calcular_soluciones] Procesando nodo          169 (169), pendientes:3,  CS:106 -> ci=105 : <0,2> <1,4> <2,1> !<3,7> !<3,8> 
+[calcular_soluciones] Procesando nodo          170 (171), pendientes:3,  CS:106 -> ci=105 : <0,2> <1,4> <2,1> <3,9> 
+[calcular_soluciones] Procesando nodo          155 (173), pendientes:2,  CS:106 -> ci=91 : <0,2> <1,4> !<2,1> 
+[calcular_soluciones] Procesando nodo          174 (175), pendientes:3,  CS:106 -> ci=101 : <0,2> <1,4> <2,7> 
+[calcular_soluciones] Procesando nodo          176 (177), pendientes:4,  CS:106 -> ci=101 : <0,2> <1,4> <2,7> <3,1> 
+[calcular_soluciones] Procesando nodo          177 (179), pendientes:3,  CS:106 -> ci=104 : <0,2> <1,4> <2,7> !<3,1> 
+[calcular_soluciones] Procesando nodo          181 (181), pendientes:3,  CS:106 -> ci=104 : <0,2> <1,4> <2,7> !<3,1> !<3,8> 
+[calcular_soluciones] Procesando nodo          182 (183), pendientes:3,  CS:106 -> ci=104 : <0,2> <1,4> <2,7> <3,9> 
+[calcular_soluciones] Procesando nodo          175 (185), pendientes:2,  CS:106 -> ci=91 : <0,2> <1,4> !<2,1> !<2,7> 
+[calcular_soluciones] Procesando nodo          186 (187), pendientes:2,  CS:106 -> ci=91 : <0,2> <1,4> <2,9> 
+[calcular_soluciones] Procesando nodo          188 (189), pendientes:3,  CS:106 -> ci=91 : <0,2> <1,4> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          190 (191), pendientes:4,  CS:106 -> ci=98 : <0,2> <1,4> <2,9> <3,1> <4,0> 
+[calcular_soluciones] Procesando nodo          192 (193), pendientes:4,  CS:106 -> ci=98 : <0,2> <1,4> <2,9> <3,1> <4,0> <5,7> 
+[calcular_soluciones] Procesando nodo          191 (195), pendientes:3,  CS:106 -> ci=98 : <0,2> <1,4> <2,9> <3,1> !<4,0> 
+[calcular_soluciones] Procesando nodo          196 (197), pendientes:4,  CS:106 -> ci=100 : <0,2> <1,4> <2,9> <3,1> <4,7> 
+[calcular_soluciones] Procesando nodo          197 (199), pendientes:3,  CS:106 -> ci=101 : <0,2> <1,4> <2,9> <3,1> !<4,0> !<4,7> 
+[calcular_soluciones] Procesando nodo          189 (201), pendientes:2,  CS:106 -> ci=94 : <0,2> <1,4> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          202 (203), pendientes:3,  CS:106 -> ci=94 : <0,2> <1,4> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          204 (205), pendientes:4,  CS:106 -> ci=101 : <0,2> <1,4> <2,9> <3,7> <4,0> 
+[calcular_soluciones] Procesando nodo          206 (207), pendientes:4,  CS:106 -> ci=102 : <0,2> <1,4> <2,9> <3,7> <4,0> <5,1> 
+[calcular_soluciones] Procesando nodo          205 (209), pendientes:3,  CS:106 -> ci=102 : <0,2> <1,4> <2,9> <3,7> !<4,0> 
+[calcular_soluciones] Procesando nodo          210 (211), pendientes:4,  CS:106 -> ci=102 : <0,2> <1,4> <2,9> <3,7> <4,3> 
+[calcular_soluciones] Procesando nodo          212 (213), pendientes:4,  CS:106 -> ci=102 : <0,2> <1,4> <2,9> <3,7> <4,3> <5,1> 
+[calcular_soluciones] Procesando nodo          211 (215), pendientes:3,  CS:106 -> ci=105 : <0,2> <1,4> <2,9> <3,7> !<4,0> !<4,3> 
+[calcular_soluciones] Procesando nodo          203 (217), pendientes:2,  CS:106 -> ci=105 : <0,2> <1,4> <2,9> !<3,1> !<3,7> 
+[calcular_soluciones] Procesando nodo          153 (219), pendientes:1,  CS:106 -> ci=86 : <0,2> !<1,0> !<1,4> 
+[calcular_soluciones] Procesando nodo          220 (221), pendientes:2,  CS:106 -> ci=91 : <0,2> <1,5> 
+[calcular_soluciones] Procesando nodo          222 (223), pendientes:3,  CS:106 -> ci=100 : <0,2> <1,5> <2,1> 
+[calcular_soluciones] Procesando nodo          224 (225), pendientes:4,  CS:106 -> ci=100 : <0,2> <1,5> <2,1> <3,7> 
+[calcular_soluciones] Procesando nodo          225 (227), pendientes:3,  CS:106 -> ci=100 : <0,2> <1,5> <2,1> !<3,7> 
+[calcular_soluciones] Procesando nodo          229 (229), pendientes:3,  CS:106 -> ci=100 : <0,2> <1,5> <2,1> !<3,7> !<3,8> 
+[calcular_soluciones] Procesando nodo          230 (231), pendientes:3,  CS:106 -> ci=100 : <0,2> <1,5> <2,1> <3,9> 
+[calcular_soluciones] Procesando nodo          223 (233), pendientes:2,  CS:106 -> ci=92 : <0,2> <1,5> !<2,1> 
+[calcular_soluciones] Procesando nodo          234 (235), pendientes:3,  CS:106 -> ci=92 : <0,2> <1,5> <2,9> 
+[calcular_soluciones] Procesando nodo          236 (237), pendientes:4,  CS:106 -> ci=93 : <0,2> <1,5> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          238 (239), pendientes:5,  CS:106 -> ci=101 : <0,2> <1,5> <2,9> <3,1> <4,0> 
+[calcular_soluciones] Procesando nodo          240 (241), pendientes:5,  CS:106 -> ci=101 : <0,2> <1,5> <2,9> <3,1> <4,0> <5,7> 
+[calcular_soluciones] Procesando nodo          242 (243), pendientes:5,  CS:106 -> ci=101 : <0,2> <1,5> <2,9> <3,1> <4,0> <5,7> <6,8> 
+
+[calcular_soluciones] Encontrada solución left 244 (CS:101) -> ci=101 : <0,2> <1,5> <2,9> <3,1> <4,0> <5,7> <6,8> <7,4> <8,3> <9,6> 
+[calcular_soluciones] Procesando nodo          239 (245), pendientes:4,  CS:101 -> ci=101 : <0,2> <1,5> <2,9> <3,1> !<4,0> 
+[calcular_soluciones] Procesando nodo          237 (247), pendientes:3,  CS:101 -> ci=102 : <0,2> <1,5> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          235 (249), pendientes:2,  CS:101 -> ci=102 : <0,2> <1,5> !<2,1> !<2,9> 
+[calcular_soluciones] Procesando nodo          221 (251), pendientes:1,  CS:101 -> ci=90 : <0,2> !<1,0> !<1,4> !<1,5> 
+[calcular_soluciones] Procesando nodo          252 (253), pendientes:2,  CS:101 -> ci=91 : <0,2> <1,7> 
+[calcular_soluciones] Procesando nodo          255 (255), pendientes:2,  CS:101 -> ci=91 : <0,2> <1,7> !<2,1> 
+[calcular_soluciones] Procesando nodo          256 (257), pendientes:2,  CS:101 -> ci=91 : <0,2> <1,7> <2,9> 
+[calcular_soluciones] Procesando nodo          253 (259), pendientes:1,  CS:101 -> ci=95 : <0,2> !<1,0> !<1,4> !<1,5> !<1,7> 
+[calcular_soluciones] Procesando nodo          260 (261), pendientes:2,  CS:101 -> ci=96 : <0,2> <1,8> 
+[calcular_soluciones] Procesando nodo          263 (263), pendientes:2,  CS:101 -> ci=95 : <0,2> <1,8> !<2,1> 
+[calcular_soluciones] Procesando nodo          265 (265), pendientes:2,  CS:101 -> ci=95 : <0,2> <1,8> !<2,1> !<2,7> 
+[calcular_soluciones] Procesando nodo          266 (267), pendientes:2,  CS:101 -> ci=95 : <0,2> <1,8> <2,9> 
+[calcular_soluciones] Procesando nodo          269 (269), pendientes:2,  CS:101 -> ci=98 : <0,2> <1,8> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          270 (271), pendientes:2,  CS:101 -> ci=98 : <0,2> <1,8> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          273 (273), pendientes:2,  CS:101 -> ci=99 : <0,2> <1,8> <2,9> <3,7> !<4,1> 
+[calcular_soluciones] Procesando nodo          261 (275), pendientes:1,  CS:101 -> ci=95 : <0,2> !<1,0> !<1,4> !<1,5> !<1,7> !<1,8> 
+[calcular_soluciones] Procesando nodo          277 (277), pendientes:1,  CS:101 -> ci=95 : <0,2> !<1,0> !<1,4> !<1,5> !<1,7> !<1,8> !<1,6> 
+[calcular_soluciones] Procesando nodo          278 (279), pendientes:1,  CS:101 -> ci=95 : <0,2> <1,9> 
+[calcular_soluciones] Procesando nodo          280 (281), pendientes:1,  CS:101 -> ci=99 : <0,2> <1,9> <2,1> 
+[calcular_soluciones] Procesando nodo          127 (283), pendientes:0,  CS:101 -> ci=85 : !<0,1> !<0,2> 
+[calcular_soluciones] Procesando nodo          284 (285), pendientes:1,  CS:101 -> ci=86 : <0,4> 
+[calcular_soluciones] Procesando nodo          286 (287), pendientes:2,  CS:101 -> ci=94 : <0,4> <1,0> 
+[calcular_soluciones] Procesando nodo          289 (289), pendientes:2,  CS:101 -> ci=94 : <0,4> <1,0> !<2,1> 
+[calcular_soluciones] Procesando nodo          290 (291), pendientes:2,  CS:101 -> ci=94 : <0,4> <1,0> <2,9> 
+[calcular_soluciones] Procesando nodo          287 (293), pendientes:1,  CS:101 -> ci=86 : <0,4> !<1,0> 
+[calcular_soluciones] Procesando nodo          294 (295), pendientes:2,  CS:101 -> ci=86 : <0,4> <1,5> 
+[calcular_soluciones] Procesando nodo          297 (297), pendientes:2,  CS:101 -> ci=87 : <0,4> <1,5> !<2,1> 
+[calcular_soluciones] Procesando nodo          298 (299), pendientes:3,  CS:101 -> ci=87 : <0,4> <1,5> <2,9> 
+[calcular_soluciones] Procesando nodo          300 (301), pendientes:4,  CS:101 -> ci=96 : <0,4> <1,5> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          302 (303), pendientes:5,  CS:101 -> ci=98 : <0,4> <1,5> <2,9> <3,1> <4,7> 
+[calcular_soluciones] Procesando nodo          303 (305), pendientes:4,  CS:101 -> ci=97 : <0,4> <1,5> <2,9> <3,1> !<4,7> 
+[calcular_soluciones] Procesando nodo          306 (307), pendientes:5,  CS:101 -> ci=100 : <0,4> <1,5> <2,9> <3,1> <4,3> 
+[calcular_soluciones] Procesando nodo          308 (309), pendientes:5,  CS:101 -> ci=100 : <0,4> <1,5> <2,9> <3,1> <4,3> <5,7> 
+[calcular_soluciones] Procesando nodo          310 (311), pendientes:5,  CS:101 -> ci=100 : <0,4> <1,5> <2,9> <3,1> <4,3> <5,7> <6,0> 
+
+[calcular_soluciones] Encontrada solución righ 313 (CS:100) -> ci=100 : <0,4> <1,5> <2,9> <3,1> <4,3> <5,7> <6,0> <7,8> <8,2> <9,6> 
+[calcular_soluciones] Procesando nodo          307 (313), pendientes:4,  CS:100 -> ci=97 : <0,4> <1,5> <2,9> <3,1> !<4,7> !<4,3> 
+[calcular_soluciones] Procesando nodo          314 (315), pendientes:4,  CS:100 -> ci=97 : <0,4> <1,5> <2,9> <3,1> <4,8> 
+[calcular_soluciones] Procesando nodo          316 (317), pendientes:4,  CS:100 -> ci=97 : <0,4> <1,5> <2,9> <3,1> <4,8> <5,7> 
+[calcular_soluciones] Procesando nodo          318 (319), pendientes:4,  CS:100 -> ci=97 : <0,4> <1,5> <2,9> <3,1> <4,8> <5,7> <6,0> 
+
+[calcular_soluciones] Encontrada solución left 320 (CS:97) -> ci=97 : <0,4> <1,5> <2,9> <3,1> <4,8> <5,7> <6,0> <7,2> <8,3> <9,6> 
+[calcular_soluciones] Procesando nodo          301 (321), pendientes:3,  CS:97 -> ci=96 : <0,4> <1,5> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          322 (323), pendientes:3,  CS:97 -> ci=96 : <0,4> <1,5> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo          324 (325), pendientes:3,  CS:97 -> ci=96 : <0,4> <1,5> <2,9> <3,2> <4,1> 
+[calcular_soluciones] Procesando nodo          326 (327), pendientes:3,  CS:97 -> ci=96 : <0,4> <1,5> <2,9> <3,2> <4,1> <5,7> 
+[calcular_soluciones] Procesando nodo          328 (329), pendientes:3,  CS:97 -> ci=96 : <0,4> <1,5> <2,9> <3,2> <4,1> <5,7> <6,0> 
+
+[calcular_soluciones] Encontrada solución left 330 (CS:96) -> ci=96 : <0,4> <1,5> <2,9> <3,2> <4,1> <5,7> <6,0> <7,8> <8,3> <9,6> 
+[calcular_soluciones] Procesando nodo          299 (331), pendientes:2,  CS:96 -> ci=97 : <0,4> <1,5> !<2,1> !<2,9> 
+[calcular_soluciones] Procesando nodo          295 (333), pendientes:1,  CS:96 -> ci=83 : <0,4> !<1,0> !<1,5> 
+[calcular_soluciones] Procesando nodo          334 (335), pendientes:2,  CS:96 -> ci=86 : <0,4> <1,7> 
+[calcular_soluciones] Procesando nodo          337 (337), pendientes:2,  CS:96 -> ci=86 : <0,4> <1,7> !<2,1> 
+[calcular_soluciones] Procesando nodo          338 (339), pendientes:2,  CS:96 -> ci=86 : <0,4> <1,7> <2,9> 
+[calcular_soluciones] Procesando nodo          341 (341), pendientes:2,  CS:96 -> ci=95 : <0,4> <1,7> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          342 (343), pendientes:2,  CS:96 -> ci=95 : <0,4> <1,7> <2,9> <3,2> 
+[calcular_soluciones] Procesando nodo          335 (345), pendientes:1,  CS:96 -> ci=88 : <0,4> !<1,0> !<1,5> !<1,7> 
+[calcular_soluciones] Procesando nodo          346 (347), pendientes:2,  CS:96 -> ci=89 : <0,4> <1,8> 
+[calcular_soluciones] Procesando nodo          349 (349), pendientes:2,  CS:96 -> ci=88 : <0,4> <1,8> !<2,1> 
+[calcular_soluciones] Procesando nodo          351 (351), pendientes:2,  CS:96 -> ci=88 : <0,4> <1,8> !<2,1> !<2,7> 
+[calcular_soluciones] Procesando nodo          352 (353), pendientes:2,  CS:96 -> ci=88 : <0,4> <1,8> <2,9> 
+[calcular_soluciones] Procesando nodo          355 (355), pendientes:2,  CS:96 -> ci=91 : <0,4> <1,8> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          357 (357), pendientes:2,  CS:96 -> ci=91 : <0,4> <1,8> <2,9> !<3,1> !<3,2> 
+[calcular_soluciones] Procesando nodo          358 (359), pendientes:2,  CS:96 -> ci=91 : <0,4> <1,8> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          347 (361), pendientes:1,  CS:96 -> ci=90 : <0,4> !<1,0> !<1,5> !<1,7> !<1,8> 
+[calcular_soluciones] Procesando nodo          362 (363), pendientes:2,  CS:96 -> ci=92 : <0,4> <1,2> 
+[calcular_soluciones] Procesando nodo          365 (365), pendientes:2,  CS:96 -> ci=92 : <0,4> <1,2> !<2,7> 
+[calcular_soluciones] Procesando nodo          366 (367), pendientes:2,  CS:96 -> ci=92 : <0,4> <1,2> <2,9> 
+[calcular_soluciones] Procesando nodo          368 (369), pendientes:3,  CS:96 -> ci=94 : <0,4> <1,2> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          369 (371), pendientes:2,  CS:96 -> ci=95 : <0,4> <1,2> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          372 (373), pendientes:2,  CS:96 -> ci=95 : <0,4> <1,2> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          363 (375), pendientes:1,  CS:96 -> ci=90 : <0,4> !<1,0> !<1,5> !<1,7> !<1,8> !<1,2> 
+[calcular_soluciones] Procesando nodo          377 (377), pendientes:1,  CS:96 -> ci=90 : <0,4> !<1,0> !<1,5> !<1,7> !<1,8> !<1,2> !<1,6> 
+[calcular_soluciones] Procesando nodo          378 (379), pendientes:1,  CS:96 -> ci=90 : <0,4> <1,9> 
+[calcular_soluciones] Procesando nodo          380 (381), pendientes:1,  CS:96 -> ci=95 : <0,4> <1,9> <2,1> 
+[calcular_soluciones] Procesando nodo          285 (383), pendientes:0,  CS:96 -> ci=89 : !<0,1> !<0,2> !<0,4> 
+[calcular_soluciones] Procesando nodo          384 (385), pendientes:0,  CS:96 -> ci=89 : <0,8> 
+[calcular_soluciones] Procesando nodo          387 (387), pendientes:0,  CS:96 -> ci=89 : <0,8> !<1,0> 
+[calcular_soluciones] Procesando nodo          389 (389), pendientes:0,  CS:96 -> ci=76 : <0,8> !<1,0> !<1,2> 
+[calcular_soluciones] Procesando nodo          390 (391), pendientes:1,  CS:96 -> ci=90 : <0,8> <1,4> 
+[calcular_soluciones] Procesando nodo          393 (393), pendientes:1,  CS:96 -> ci=90 : <0,8> <1,4> !<2,1> 
+[calcular_soluciones] Procesando nodo          395 (395), pendientes:1,  CS:96 -> ci=90 : <0,8> <1,4> !<2,1> !<2,7> 
+[calcular_soluciones] Procesando nodo          396 (397), pendientes:1,  CS:96 -> ci=90 : <0,8> <1,4> <2,9> 
+[calcular_soluciones] Procesando nodo          398 (399), pendientes:2,  CS:96 -> ci=90 : <0,8> <1,4> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          399 (401), pendientes:1,  CS:96 -> ci=93 : <0,8> <1,4> <2,9> !<3,1> 
+[calcular_soluciones] Procesando nodo          403 (403), pendientes:1,  CS:96 -> ci=93 : <0,8> <1,4> <2,9> !<3,1> !<3,2> 
+[calcular_soluciones] Procesando nodo          404 (405), pendientes:1,  CS:96 -> ci=93 : <0,8> <1,4> <2,9> <3,7> 
+[calcular_soluciones] Procesando nodo          391 (407), pendientes:0,  CS:96 -> ci=85 : <0,8> !<1,0> !<1,2> !<1,4> 
+[calcular_soluciones] Procesando nodo          408 (409), pendientes:1,  CS:96 -> ci=91 : <0,8> <1,5> 
+[calcular_soluciones] Procesando nodo          411 (411), pendientes:1,  CS:96 -> ci=93 : <0,8> <1,5> !<2,1> 
+[calcular_soluciones] Procesando nodo          412 (413), pendientes:1,  CS:96 -> ci=93 : <0,8> <1,5> <2,9> 
+[calcular_soluciones] Procesando nodo          414 (415), pendientes:1,  CS:96 -> ci=94 : <0,8> <1,5> <2,9> <3,1> 
+[calcular_soluciones] Procesando nodo          409 (417), pendientes:0,  CS:96 -> ci=90 : <0,8> !<1,0> !<1,2> !<1,4> !<1,5> 
+[calcular_soluciones] Procesando nodo          419 (419), pendientes:0,  CS:96 -> ci=90 : <0,8> !<1,0> !<1,2> !<1,4> !<1,5> !<1,6> 
+[calcular_soluciones] Procesando nodo          420 (421), pendientes:0,  CS:96 -> ci=92 : <0,8> <1,7> 
+[calcular_soluciones] Procesando nodo          423 (423), pendientes:0,  CS:96 -> ci=92 : <0,8> <1,7> !<2,1> 
+[calcular_soluciones] Procesando nodo          424 (425), pendientes:0,  CS:96 -> ci=92 : <0,8> <1,7> <2,9> 
