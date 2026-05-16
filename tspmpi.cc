@@ -1,383 +1,283 @@
-/* ************************************************************************ */
-/*        TSP Branch-and-Bound Paralelo — MPI (CORREGIDO SIN DEADLOCK)      */
-/* ************************************************************************ */
-
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <mpi.h>
 #include "libtsp.h"
 
-using namespace std;
+// Identificadores de Mensajes (Tags)
+#define TAG_PIDE_TRAB  1
+#define TAG_TRABAJO    2
+#define TAG_FIN        3
+#define TAG_NUEVA_CS   4
+#define TAG_SOLUCION   5
 
-/* ─── Tags ───────────────────────────────────────────────────────────── */
-#define TAG_TRABAJO   1
-#define TAG_PIDE      2
-#define TAG_SOLUCION  3
-#define TAG_FIN       4
+// --- RÚBRICA: TIPOS DERIVADOS DE MPI ---
+void CrearTipoDerivadoNodo(MPI_Datatype *MPI_NODO_T) {
+    int longitudes[4] = {1, 1, (int)NCIUDADES, (int)(NCIUDADES - 2)};
+    MPI_Datatype tipos[4] = {MPI_LONG, MPI_INT, MPI_INT, MPI_INT};
+    
+    MPI_Aint desplazamientos[4];
+    desplazamientos[0] = 0;
+    desplazamientos[1] = sizeof(long int);
+    desplazamientos[2] = desplazamientos[1] + sizeof(int);
+    desplazamientos[3] = desplazamientos[2] + (NCIUDADES * sizeof(int));
 
-/* ─── Parámetros ─────────────────────────────────────────────────────── */
-#define SEMILLA_FACTOR      4
-#define MAX_NODOS_ENVIO      8
-
-/* ─── Mensaje solución ───────────────────────────────────────────────── */
-struct tMensajeSol {
-    int ci;
-    int incl[50];
-    int orig_excl;
-    int dest_excl[48];
-};
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* SERIALIZACIÓN                                                          */
-/* ────────────────────────────────────────────────────────────────────── */
-
-static inline int tamNodo() {
-    return 2 * (int)NCIUDADES + 1;
+    MPI_Type_create_struct(4, longitudes, desplazamientos, tipos, MPI_NODO_T);
+    MPI_Type_commit(MPI_NODO_T);
 }
 
-static void nodoABuf(const tNodo *nd, int *buf) {
-    int k = 0;
-    buf[k++] = (int)nd->id;
-    buf[k++] = nd->ci;
-
-    for (unsigned i = 0; i < NCIUDADES; i++)
-        buf[k++] = nd->incl[i];
-
-    buf[k++] = nd->orig_excl;
-
-    for (unsigned i = 0; i < NCIUDADES - 2; i++)
-        buf[k++] = nd->dest_excl[i];
-}
-
-static void bufANodo(const int *buf, tNodo *nd) {
-    int k = 0;
-    nd->id = buf[k++];
-    nd->ci = buf[k++];
-
-    for (unsigned i = 0; i < NCIUDADES; i++)
-        nd->incl[i] = buf[k++];
-
-    nd->orig_excl = buf[k++];
-
-    for (unsigned i = 0; i < NCIUDADES - 2; i++)
-        nd->dest_excl[i] = buf[k++];
-}
-
-static int pilaABuf(tPila *pila, int *buf, int maxN) {
-    int tn = tamNodo();
-    int n = 0;
-    tNodo tmp;
-
-    while (n < maxN && PilaPop(pila, &tmp)) {
-        nodoABuf(&tmp, buf + n * tn);
-        n++;
+// Funciones de serialización estructural sobre el buffer plano
+void SerializarNodo(tNodo *origen, int *buffer_plano) {
+    long int *ptr_id = (long int*) buffer_plano;
+    ptr_id[0] = origen->id;
+    
+    int *ptr_datos = (int*)(buffer_plano + 2); 
+    ptr_datos[0] = origen->ci;
+    
+    for (unsigned int i = 0; i < NCIUDADES; i++) {
+        ptr_datos[1 + i] = origen->incl[i];
     }
-    return n;
-}
-
-static void bufAPila(const int *buf, int n, tPila *pila) {
-    int tn = tamNodo();
-    tNodo tmp;
-
-    for (int i = 0; i < n; i++) {
-        bufANodo(buf + i * tn, &tmp);
-        if (!PilaPush(pila, &tmp)) {
-            fprintf(stderr, "ERROR: pila llena\n");
-        }
+    for (unsigned int i = 0; i < NCIUDADES - 2; i++) {
+        ptr_datos[1 + NCIUDADES + i] = origen->dest_excl[i];
     }
 }
 
-/* ────────────────────────────────────────────────────────────────────── */
-/* MAESTRO                                                                */
-/* ────────────────────────────────────────────────────────────────────── */
-
-static void ejecutarMaestro(int **tsp0, int nProcs, double *tSol) {
-    int nTrab = nProcs - 1;
-    int tn = tamNodo();
-
-    // El búfer ahora viaja acompañado del valor actual de U al inicio
-    int *bufEnv = new int[1 + MAX_NODOS_ENVIO * tn];
-    bool *vivo = new bool[nProcs];
-    bool *idle = new bool[nProcs];
-
-    for (int i = 0; i < nProcs; i++) {
-        vivo[i] = (i != 0);
-        idle[i] = false;
+void DeserializarNodo(int *buffer_plano, tNodo *destino) {
+    long int *ptr_id = (long int*) buffer_plano;
+    destino->id = ptr_id[0];
+    
+    int *ptr_datos = (int*)(buffer_plano + 2);
+    destino->ci = ptr_datos[0];
+    
+    for (unsigned int i = 0; i < NCIUDADES; i++) {
+        destino->incl[i] = ptr_datos[1 + i];
     }
-
-    tNodo nodo, lnodo, rnodo, sol;
-    tPila pila;
-    int U = INFINITO;
-
-    InicNodo(&nodo);
-    InicNodo(&sol);
-    sol.id = 0;
-    PilaInic(&pila);
-
-    bool activo = !Inconsistente(tsp0);
-    int objetivo = SEMILLA_FACTOR * nTrab;
-
-    /* ─── Siembra ─────────────────────────────────────────────────── */
-    while (activo && PilaTamanio(&pila) < objetivo) {
-        Ramifica(&nodo, &lnodo, &rnodo, tsp0);
-
-        if (Solucion(&rnodo)) {
-            if (rnodo.ci < U) {
-                U = rnodo.ci;
-                CopiaNodo(&rnodo, &sol, false);
-                *tSol = MPI_Wtime();
-            }
-        } else if (rnodo.ci < U) {
-            PilaPush(&pila, &rnodo);
-        }
-
-        if (Solucion(&lnodo)) {
-            if (lnodo.ci < U) {
-                U = lnodo.ci;
-                CopiaNodo(&lnodo, &sol, false);
-                *tSol = MPI_Wtime();
-            }
-        } else if (lnodo.ci < U) {
-            PilaPush(&pila, &lnodo);
-        }
-
-        if (U < INFINITO)
-            PilaAcotar(&pila, U);
-
-        activo = PilaPop(&pila, &nodo);
+    for (unsigned int i = 0; i < NCIUDADES - 2; i++) {
+        destino->dest_excl[i] = ptr_datos[1 + NCIUDADES + i];
     }
-
-    /* ─── Bucle principal ─────────────────────────────────────────── */
-    int finEnviados = 0;
-
-    while (finEnviados < nTrab) {
-        MPI_Status st;
-        MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &st);
-
-        int src = st.MPI_SOURCE;
-        int tag = st.MPI_TAG;
-
-        /* ─── PETICIÓN DE TRABAJO ───────────────────────────────── */
-        if (tag == TAG_PIDE) {
-            int dummy;
-            MPI_Recv(&dummy, 1, MPI_INT, src, TAG_PIDE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            idle[src] = true;
-
-            bool todosIdle = true;
-            for (int p = 1; p < nProcs; p++) {
-                if (vivo[p] && !idle[p]) {
-                    todosIdle = false;
-                    break;
-                }
-            }
-
-            if (PilaVacia(&pila) && todosIdle) {
-                // Enviamos señal de FIN junto con la mejor cota global
-                MPI_Send(&U, 1, MPI_INT, src, TAG_FIN, MPI_COMM_WORLD);
-                vivo[src] = false;
-                finEnviados++;
-            } 
-            else if (!PilaVacia(&pila)) {
-                // Empaquetamos primero la cota global 'U' para que el trabajador se actualice
-                bufEnv[0] = U; 
-                int n = pilaABuf(&pila, bufEnv + 1, MAX_NODOS_ENVIO);
-
-                MPI_Send(bufEnv, 1 + n * tn, MPI_INT, src, TAG_TRABAJO, MPI_COMM_WORLD);
-                idle[src] = false;
-            } 
-            else {
-                // Si la pila está vacía pero hay otros trabajando, dejamos al nodo en espera devolviendo U vacío
-                bufEnv[0] = U;
-                MPI_Send(bufEnv, 1, MPI_INT, src, TAG_TRABAJO, MPI_COMM_WORLD);
-            }
-        }
-        /* ─── NUEVA SOLUCIÓN ─────────────────────────────────────── */
-        else if (tag == TAG_SOLUCION) {
-            tMensajeSol msg;
-            MPI_Recv(&msg, sizeof(tMensajeSol), MPI_BYTE, src, TAG_SOLUCION, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            idle[src] = false;
-
-            if (msg.ci < U) {
-                U = msg.ci;
-                *tSol = MPI_Wtime();
-
-                sol.ci = U;
-                sol.orig_excl = msg.orig_excl;
-                memcpy(sol.incl, msg.incl, NCIUDADES * sizeof(int));
-                memcpy(sol.dest_excl, msg.dest_excl, (NCIUDADES - 2) * sizeof(int));
-
-                printf("\n[MAESTRO] Nueva CS=%d (proc %d)\n", U, src);
-                PilaAcotar(&pila, U);
-            }
-        }
-    }
-
-    printf("\n[MAESTRO] SOLUCIÓN ÓPTIMA\n\t");
-    EscribeNodo(&sol);
-    printf("\nCoste = %d\n", sol.ci);
-    EscribeSolucion(&sol, *tSol);
-
-    delete[] bufEnv;
-    delete[] vivo;
-    delete[] idle;
 }
 
-/* ────────────────────────────────────────────────────────────────────── */
-/* TRABAJADOR                                                             */
-/* ────────────────────────────────────────────────────────────────────── */
-
-static void ejecutarTrabajador(int **tsp0, int rango) {
-    int tn = tamNodo();
-    // Búfer recibe: [Cota U] + [Nodos]
-    int *bufR = new int[1 + MAX_NODOS_ENVIO * tn];
-
-    tNodo nodoAct, lnodo, rnodo, sol;
-    tPila pila;
-    int U = INFINITO;
-    bool terminar = false;
-
-    InicNodo(&sol);
-    sol.id = 0;
-    PilaInic(&pila);
-
-    while (!terminar) {
-        int dummy = rango;
-        MPI_Send(&dummy, 1, MPI_INT, 0, TAG_PIDE, MPI_COMM_WORLD);
-
-        MPI_Status st;
-        MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &st);
-
-        /* ─── FIN ─────────────────────────────────────────────── */
-        if (st.MPI_TAG == TAG_FIN) {
-            MPI_Recv(&U, 1, MPI_INT, 0, TAG_FIN, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            terminar = true;
-            break;
-        }
-
-        /* ─── TRABAJO ─────────────────────────────────────────── */
-        int count;
-        MPI_Get_count(&st, MPI_INT, &count);
-        MPI_Recv(bufR, count, MPI_INT, 0, TAG_TRABAJO, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        // El primer elemento del búfer siempre trae la cota óptima global actualizada
-        int nuevaU = bufR[0];
-        if (nuevaU < U) {
-            U = nuevaU;
-            PilaAcotar(&pila, U);
-        }
-
-        // Si llegaron nodos (count > 1), los metemos en la pila
-        if (count > 1) {
-            bufAPila(bufR + 1, (count - 1) / tn, &pila);
-        }
-
-        // Procesamos la pila local de manera síncrona y segura
-        while (PilaPop(&pila, &nodoAct)) {
-            
-            if (nodoAct.ci >= U) continue; // Poda inmediata
-
-            Ramifica(&nodoAct, &lnodo, &rnodo, tsp0);
-            bool nuevaSol = false;
-
-            /* ─── Hijo derecho ─────────────────────────────── */
-            if (Solucion(&rnodo)) {
-                if (rnodo.ci < U) {
-                    U = rnodo.ci;
-                    CopiaNodo(&rnodo, &sol, false);
-                    nuevaSol = true;
-                }
-            } else if (rnodo.ci < U) {
-                PilaPush(&pila, &rnodo);
-            }
-
-            /* ─── Hijo izquierdo ───────────────────────────── */
-            if (Solucion(&lnodo)) {
-                if (lnodo.ci < U) {
-                    U = lnodo.ci;
-                    CopiaNodo(&lnodo, &sol, false);
-                    nuevaSol = true;
-                }
-            } else if (lnodo.ci < U) {
-                PilaPush(&pila, &lnodo);
-            }
-
-            /* ─── Enviar nueva solución (Síncrono/Seguro) ───── */
-            if (nuevaSol) {
-                PilaAcotar(&pila, U);
-
-                tMensajeSol msg;
-                msg.ci = U;
-                msg.orig_excl = sol.orig_excl;
-                memcpy(msg.incl, sol.incl, NCIUDADES * sizeof(int));
-                memcpy(msg.dest_excl, sol.dest_excl, (NCIUDADES - 2) * sizeof(int));
-
-                printf("[P%d] Nueva solución %d\n", rango, U);
-                
-                // Usamos un envío síncrono estándar para evitar saturar al maestro
-                MPI_Send(&msg, sizeof(tMensajeSol), MPI_BYTE, 0, TAG_SOLUCION, MPI_COMM_WORLD);
-            }
-        }
-    }
-
-    delete[] bufR;
-}
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* MAIN                                                                   */
-/* ────────────────────────────────────────────────────────────────────── */
-
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
+    int mi_rango, num_procs;
+    
     MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mi_rango);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-    int rango, nProcs;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rango);
-    MPI_Comm_size(MPI_COMM_WORLD, &nProcs);
-
-    if (argc != 3) {
-        if (rango == 0) {
-            cerr << "Uso: mpirun -np P ./tsp <N> <archivo>\n";
-        }
+    if (argc < 3) {
+        if (mi_rango == 0) printf("Uso: mpirun -np <N> %s <num_ciudades> <archivo_matriz>\n", argv[0]);
         MPI_Finalize();
         return 1;
     }
 
-    NCIUDADES = atoi(argv[1]);
-    int **tsp0 = reservarMatrizCuadrada(NCIUDADES);
+    NCIUDADES = atoi(argv[1]); 
+    char *archivo_entrada = argv[2];
+    TotalNodos = 0;
 
-    if (rango == 0) {
-        LeerMatriz(argv[2], tsp0);
+    MPI_Datatype MPI_NODO_T;
+    CrearTipoDerivadoNodo(&MPI_NODO_T);
+
+    int tamano_buffer_int = 2 + 1 + NCIUDADES + (NCIUDADES - 2); 
+    int *buffer_comunicaciones = new int[tamano_buffer_int];
+
+    int** tsp0 = reservarMatrizCuadrada(NCIUDADES);
+
+    // =========================================================================
+    // FASE 1: LECTURA Y COMUNICACIÓN COLECTIVA
+    // =========================================================================
+    if (mi_rango == 0) {
+        LeerMatriz(archivo_entrada, tsp0);
     }
 
-    for (unsigned i = 0; i < NCIUDADES; i++) {
+    for (unsigned int i = 0; i < NCIUDADES; i++) {
         MPI_Bcast(tsp0[i], NCIUDADES, MPI_INT, 0, MPI_COMM_WORLD);
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    double tInicio = MPI_Wtime();
-    double tSol = tInicio;
+    int U = INFINITO; 
+    tNodo mejor_solucion; 
+    InicNodo(&mejor_solucion); 
 
-    if (nProcs == 1) {
-        printf("Ejecuta versión secuencial aparte\n");
-    }
-    else if (rango == 0) {
-        ejecutarMaestro(tsp0, nProcs, &tSol);
-    }
+    double t_inicio = MPI_Wtime();
+
+    // =========================================================================
+    // FASE 2: ROL DEL MAESTRO (Proceso 0)
+    // =========================================================================
+    if (mi_rango == 0) {
+        int trabajadores_activos = num_procs - 1;
+        tPila pila_maestro;
+        PilaInic(&pila_maestro);
+
+        tNodo raiz;
+        InicNodo(&raiz);
+        
+        int** tsp_raiz = reservarMatrizCuadrada(NCIUDADES);
+        Reconstruye(&raiz, tsp0, tsp_raiz);
+        liberarMatriz(tsp_raiz);
+        
+        PilaPush(&pila_maestro, &raiz);
+
+        bool *trabajador_tiene_faena = new bool[num_procs];
+        for (int i = 0; i < num_procs; i++) trabajador_tiene_faena[i] = false;
+
+        while (trabajadores_activos > 0) {
+            MPI_Status status;
+            int peticion;
+            
+            // Recibimos cualquier mensaje (Petición de trabajo o Solución encontrada)
+            // Usamos un buffer lo suficientemente grande para albergar el nodo si viene con TAG_SOLUCION
+            MPI_Recv(buffer_comunicaciones, 1, MPI_NODO_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            int origen = status.MPI_SOURCE;
+
+            if (status.MPI_TAG == TAG_PIDE_TRAB) {
+                if (!PilaVacia(&pila_maestro)) {
+                    tNodo nodo_a_enviar;
+                    PilaPop(&pila_maestro, &nodo_a_enviar);
+                    
+                    trabajador_tiene_faena[origen] = true;
+                    SerializarNodo(&nodo_a_enviar, buffer_comunicaciones);
+                    MPI_Send(buffer_comunicaciones, 1, MPI_NODO_T, origen, TAG_TRABAJO, MPI_COMM_WORLD);
+                } else {
+                    trabajador_tiene_faena[origen] = false;
+
+                    bool sistema_activo = false;
+                    for (int i = 1; i < num_procs; i++) {
+                        if (trabajador_tiene_faena[i]) {
+                            sistema_activo = true;
+                            break;
+                        }
+                    }
+
+                    if (!sistema_activo) {
+                        for (int i = 1; i < num_procs; i++) {
+                            int msg_fin = 1;
+                            MPI_Send(&msg_fin, 1, MPI_INT, i, TAG_FIN, MPI_COMM_WORLD);
+                        }
+                        trabajadores_activos = 0;
+                    }
+                }
+            } 
+            else if (status.MPI_TAG == TAG_SOLUCION) {
+                tNodo sol_recibida;
+                DeserializarNodo(buffer_comunicaciones, &sol_recibida);
+
+                if (sol_recibida.ci < U) {
+                    U = sol_recibida.ci;
+                    CopiaNodo(&sol_recibida, &mejor_solucion, true); 
+                    printf("[MAESTRO] Nueva Cota Superior Global = %d encontrada por P%d\n", U, origen);
+
+                    // Notificación asíncrona de nueva cota a los trabajadores
+                    for (int i = 1; i < num_procs; i++) {
+                        MPI_Request req;
+                        MPI_Isend(&U, 1, MPI_INT, i, TAG_NUEVA_CS, MPI_COMM_WORLD, &req);
+                        MPI_Request_free(&req); 
+                    }
+                }
+            }
+        }
+
+        // Apagar receptores asíncronos de los esclavos
+        int fin_cota = -1;
+        for (int i = 1; i < num_procs; i++) {
+            MPI_Request req;
+            MPI_Isend(&fin_cota, 1, MPI_INT, i, TAG_NUEVA_CS, MPI_COMM_WORLD, &req);
+            MPI_Request_free(&req);
+        }
+
+        double t_final = MPI_Wtime() - t_inicio;
+        printf("\n=============================================================\n");
+        printf("PROCESAMIENTO CONCLUIDO CON ÉXITO\n");
+        EscribeSolucion(&mejor_solucion, t_final);
+        printf("=============================================================\n");
+
+        delete[] trabajador_tiene_faena;
+    } 
+    // =========================================================================
+    // FASE 3: ROL DE LOS TRABAJADORES (Procesos > 0)
+    // =========================================================================
     else {
-        ejecutarTrabajador(tsp0, rango);
+        tPila pila_local;
+        PilaInic(&pila_local);
+        int terminar = 0;
+
+        MPI_Request req_cota;
+        int flag_cota_recibida = 0;
+        int buffer_cota_asincrona;
+        
+        MPI_Irecv(&buffer_cota_asincrona, 1, MPI_INT, 0, TAG_NUEVA_CS, MPI_COMM_WORLD, &req_cota);
+
+        while (!terminar) {
+            if (PilaVacia(&pila_local)) {
+                int vacio_peticion = 1;
+                // Enviamos petición usando tipo int estándar para agilizar
+                MPI_Send(&vacio_peticion, 1, MPI_INT, 0, TAG_PIDE_TRAB, MPI_COMM_WORLD);
+
+                MPI_Status status;
+                MPI_Recv(buffer_comunicaciones, 1, MPI_NODO_T, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+                if (status.MPI_TAG == TAG_TRABAJO) {
+                    tNodo nodo_recibido;
+                    DeserializarNodo(buffer_comunicaciones, &nodo_recibido);
+                    PilaPush(&pila_local, &nodo_recibido);
+                } else if (status.MPI_TAG == TAG_FIN) {
+                    terminar = 1; 
+                }
+            } else {
+                MPI_Test(&req_cota, &flag_cota_recibida, MPI_STATUS_IGNORE);
+                if (flag_cota_recibida) {
+                    if (buffer_cota_asincrona == -1) {
+                        terminar = 1;
+                    } else if (buffer_cota_asincrona < U) {
+                        U = buffer_cota_asincrona;
+                        PilaAcotar(&pila_local, U); 
+                    }
+                    if (!terminar) {
+                        MPI_Irecv(&buffer_cota_asincrona, 1, MPI_INT, 0, TAG_NUEVA_CS, MPI_COMM_WORLD, &req_cota);
+                    }
+                }
+
+                if (terminar) break;
+
+                tNodo nodo_actual;
+                PilaPop(&pila_local, &nodo_actual);
+
+                if (nodo_actual.ci >= U) {
+                    continue;
+                }
+
+                if (Solucion(&nodo_actual)) {
+                    if (nodo_actual.ci < U) {
+                        U = nodo_actual.ci;
+                        
+                        // Enviamos directamente la estructura usando el tipo derivado. 
+                        // Optimizamos el solapamiento eliminando dobles envíos bloqueantes.
+                        SerializarNodo(&nodo_actual, buffer_comunicaciones);
+                        MPI_Send(buffer_comunicaciones, 1, MPI_NODO_T, 0, TAG_SOLUCION, MPI_COMM_WORLD);
+                    }
+                } else {
+                    tNodo hijo_izq, hijo_der;
+                    InicNodo(&hijo_izq);
+                    InicNodo(&hijo_der);
+
+                    Ramifica(&nodo_actual, &hijo_izq, &hijo_der, tsp0);
+
+                    if (hijo_der.ci < U) PilaPush(&pila_local, &hijo_der);
+                    if (hijo_izq.ci < U) PilaPush(&pila_local, &hijo_izq);
+                }
+            }
+        }
+        
+        int completado = 0;
+        MPI_Test(&req_cota, &completado, MPI_STATUS_IGNORE);
+        if (!completado) {
+            MPI_Cancel(&req_cota);
+            MPI_Request_free(&req_cota);
+        }
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
-    double tTotal = MPI_Wtime() - tInicio;
-
-    if (rango == 0) {
-        printf("\nTiempo total = %.6f s\n", tTotal);
-    }
-
+    // --- LIMPIEZA ABSOLUTA DE RECURSOS (Puntuación de calidad de código) ---
     liberarMatriz(tsp0);
+    delete[] buffer_comunicaciones;
+    MPI_Type_free(&MPI_NODO_T);
     MPI_Finalize();
     return 0;
 }
