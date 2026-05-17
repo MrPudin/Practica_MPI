@@ -13,47 +13,131 @@
 
 // --- RÚBRICA: TIPOS DERIVADOS DE MPI ---
 void CrearTipoDerivadoNodo(MPI_Datatype *MPI_NODO_T) {
-    int longitudes[4] = {1, 1, (int)NCIUDADES, (int)(NCIUDADES - 2)};
-    MPI_Datatype tipos[4] = {MPI_LONG, MPI_INT, MPI_INT, MPI_INT};
+    int longitudes[5] = {1, 1, 1, (int)NCIUDADES, (int)(NCIUDADES - 2)};
+    MPI_Datatype tipos[5] = {MPI_LONG, MPI_INT, MPI_INT, MPI_INT, MPI_INT};
     
-    MPI_Aint desplazamientos[4];
+    MPI_Aint desplazamientos[5];
     desplazamientos[0] = 0;
     desplazamientos[1] = sizeof(long int);
     desplazamientos[2] = desplazamientos[1] + sizeof(int);
-    desplazamientos[3] = desplazamientos[2] + (NCIUDADES * sizeof(int));
+    desplazamientos[3] = desplazamientos[2] + sizeof(int);
+    desplazamientos[4] = desplazamientos[3] + (NCIUDADES * sizeof(int));
 
-    MPI_Type_create_struct(4, longitudes, desplazamientos, tipos, MPI_NODO_T);
+    MPI_Type_create_struct(5, longitudes, desplazamientos, tipos, MPI_NODO_T);
     MPI_Type_commit(MPI_NODO_T);
 }
 
 // Funciones de serialización estructural sobre el buffer plano
-void SerializarNodo(tNodo *origen, int *buffer_plano) {
-    long int *ptr_id = (long int*) buffer_plano;
-    ptr_id[0] = origen->id;
-    
-    int *ptr_datos = (int*)(buffer_plano + 2); 
-    ptr_datos[0] = origen->ci;
-    
+int TamanoBufferNodo() {
+    return sizeof(long int) + (2 + NCIUDADES + (NCIUDADES - 2)) * sizeof(int);
+}
+
+void SerializarNodo(tNodo *origen, char *buffer_plano) {
+    char *ptr = buffer_plano;
+
+    memcpy(ptr, &origen->id, sizeof(long int));
+    ptr += sizeof(long int);
+
+    memcpy(ptr, &origen->ci, sizeof(int));
+    ptr += sizeof(int);
+
+    memcpy(ptr, &origen->orig_excl, sizeof(int));
+    ptr += sizeof(int);
+
     for (unsigned int i = 0; i < NCIUDADES; i++) {
-        ptr_datos[1 + i] = origen->incl[i];
+        memcpy(ptr, &origen->incl[i], sizeof(int));
+        ptr += sizeof(int);
     }
     for (unsigned int i = 0; i < NCIUDADES - 2; i++) {
-        ptr_datos[1 + NCIUDADES + i] = origen->dest_excl[i];
+        memcpy(ptr, &origen->dest_excl[i], sizeof(int));
+        ptr += sizeof(int);
     }
 }
 
-void DeserializarNodo(int *buffer_plano, tNodo *destino) {
-    long int *ptr_id = (long int*) buffer_plano;
-    destino->id = ptr_id[0];
-    
-    int *ptr_datos = (int*)(buffer_plano + 2);
-    destino->ci = ptr_datos[0];
-    
+void DeserializarNodo(char *buffer_plano, tNodo *destino) {
+    char *ptr = buffer_plano;
+
+    memcpy(&destino->id, ptr, sizeof(long int));
+    ptr += sizeof(long int);
+
+    memcpy(&destino->ci, ptr, sizeof(int));
+    ptr += sizeof(int);
+
+    memcpy(&destino->orig_excl, ptr, sizeof(int));
+    ptr += sizeof(int);
+
     for (unsigned int i = 0; i < NCIUDADES; i++) {
-        destino->incl[i] = ptr_datos[1 + i];
+        memcpy(&destino->incl[i], ptr, sizeof(int));
+        ptr += sizeof(int);
     }
     for (unsigned int i = 0; i < NCIUDADES - 2; i++) {
-        destino->dest_excl[i] = ptr_datos[1 + NCIUDADES + i];
+        memcpy(&destino->dest_excl[i], ptr, sizeof(int));
+        ptr += sizeof(int);
+    }
+}
+
+void ActualizarMejorSolucion(tNodo *candidato, int *U, tNodo *mejor_solucion) {
+    if (candidato->ci < *U) {
+        *U = candidato->ci;
+        CopiaNodo(candidato, mejor_solucion, false);
+    }
+}
+
+void InsertarTrabajoSiPromete(tPila *pila, tNodo *nodo, int *U, tNodo *mejor_solucion) {
+    if (nodo->ci >= *U) {
+        return;
+    }
+
+    if (Solucion(nodo)) {
+        ActualizarMejorSolucion(nodo, U, mejor_solucion);
+    } else if (!PilaPush(pila, nodo)) {
+        printf("[MAESTRO] Aviso: pila de trabajo inicial llena; se detiene la expansion inicial.\n");
+    }
+}
+
+void GenerarBolsaInicial(tPila *pila, int** tsp0, int objetivo, int *U, tNodo *mejor_solucion) {
+    while (PilaTamanio(pila) < objetivo && !PilaVacia(pila)) {
+        tNodo nodo_actual;
+        PilaPop(pila, &nodo_actual);
+
+        if (nodo_actual.ci >= *U) {
+            continue;
+        }
+
+        if (Solucion(&nodo_actual)) {
+            ActualizarMejorSolucion(&nodo_actual, U, mejor_solucion);
+            continue;
+        }
+
+        tNodo hijo_izq, hijo_der;
+        InicNodo(&hijo_izq);
+        InicNodo(&hijo_der);
+        Ramifica(&nodo_actual, &hijo_izq, &hijo_der, tsp0);
+
+        InsertarTrabajoSiPromete(pila, &hijo_der, U, mejor_solucion);
+        InsertarTrabajoSiPromete(pila, &hijo_izq, U, mejor_solucion);
+    }
+
+    PilaAcotar(pila, *U);
+}
+
+void ProbarNuevaCota(MPI_Request *req_cota, int *flag_cota_recibida,
+                     int *buffer_cota_asincrona, int *U,
+                     tPila *pila_local, int *terminar) {
+    *flag_cota_recibida = 0;
+    MPI_Test(req_cota, flag_cota_recibida, MPI_STATUS_IGNORE);
+
+    if (*flag_cota_recibida) {
+        if (*buffer_cota_asincrona == -1) {
+            *terminar = 1;
+        } else if (*buffer_cota_asincrona < *U) {
+            *U = *buffer_cota_asincrona;
+            PilaAcotar(pila_local, *U);
+        }
+
+        if (!*terminar) {
+            MPI_Irecv(buffer_cota_asincrona, 1, MPI_INT, 0, TAG_NUEVA_CS, MPI_COMM_WORLD, req_cota);
+        }
     }
 }
 
@@ -70,6 +154,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (num_procs < 2) {
+        if (mi_rango == 0) printf("Error: la version MPI necesita al menos 2 procesos: 1 maestro y 1 trabajador.\n");
+        MPI_Finalize();
+        return 1;
+    }
+
     NCIUDADES = atoi(argv[1]); 
     char *archivo_entrada = argv[2];
     TotalNodos = 0;
@@ -77,8 +167,8 @@ int main(int argc, char *argv[]) {
     MPI_Datatype MPI_NODO_T;
     CrearTipoDerivadoNodo(&MPI_NODO_T);
 
-    int tamano_buffer_int = 2 + 1 + NCIUDADES + (NCIUDADES - 2); 
-    int *buffer_comunicaciones = new int[tamano_buffer_int];
+    int tamano_buffer_bytes = TamanoBufferNodo();
+    char *buffer_comunicaciones = new char[tamano_buffer_bytes];
 
     int** tsp0 = reservarMatrizCuadrada(NCIUDADES);
 
@@ -116,8 +206,22 @@ int main(int argc, char *argv[]) {
         
         PilaPush(&pila_maestro, &raiz);
 
+        int objetivo_trabajo = (num_procs - 1) * 8;
+        if (objetivo_trabajo > (int)MAXPILA - 1) objetivo_trabajo = (int)MAXPILA - 1;
+        if (objetivo_trabajo < num_procs - 1) objetivo_trabajo = num_procs - 1;
+        GenerarBolsaInicial(&pila_maestro, tsp0, objetivo_trabajo, &U, &mejor_solucion);
+        printf("[MAESTRO] Bolsa inicial generada: %d subproblemas, cota inicial %d\n", PilaTamanio(&pila_maestro), U);
+
         bool *trabajador_tiene_faena = new bool[num_procs];
         for (int i = 0; i < num_procs; i++) trabajador_tiene_faena[i] = false;
+
+        if (U < INFINITO) {
+            for (int i = 1; i < num_procs; i++) {
+                MPI_Request req;
+                MPI_Isend(&U, 1, MPI_INT, i, TAG_NUEVA_CS, MPI_COMM_WORLD, &req);
+                MPI_Request_free(&req);
+            }
+        }
 
         while (trabajadores_activos > 0) {
             MPI_Status status;
@@ -125,10 +229,12 @@ int main(int argc, char *argv[]) {
             
             // Recibimos cualquier mensaje (Petición de trabajo o Solución encontrada)
             // Usamos un buffer lo suficientemente grande para albergar el nodo si viene con TAG_SOLUCION
-            MPI_Recv(buffer_comunicaciones, 1, MPI_NODO_T, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             int origen = status.MPI_SOURCE;
 
             if (status.MPI_TAG == TAG_PIDE_TRAB) {
+                MPI_Recv(&peticion, 1, MPI_INT, origen, TAG_PIDE_TRAB, MPI_COMM_WORLD, &status);
+
                 if (!PilaVacia(&pila_maestro)) {
                     tNodo nodo_a_enviar;
                     PilaPop(&pila_maestro, &nodo_a_enviar);
@@ -148,21 +254,23 @@ int main(int argc, char *argv[]) {
                     }
 
                     if (!sistema_activo) {
+                        memset(buffer_comunicaciones, 0, tamano_buffer_bytes);
                         for (int i = 1; i < num_procs; i++) {
-                            int msg_fin = 1;
-                            MPI_Send(&msg_fin, 1, MPI_INT, i, TAG_FIN, MPI_COMM_WORLD);
+                            MPI_Send(buffer_comunicaciones, 1, MPI_NODO_T, i, TAG_FIN, MPI_COMM_WORLD);
                         }
                         trabajadores_activos = 0;
                     }
                 }
             } 
             else if (status.MPI_TAG == TAG_SOLUCION) {
+                MPI_Recv(buffer_comunicaciones, 1, MPI_NODO_T, origen, TAG_SOLUCION, MPI_COMM_WORLD, &status);
+
                 tNodo sol_recibida;
                 DeserializarNodo(buffer_comunicaciones, &sol_recibida);
 
                 if (sol_recibida.ci < U) {
                     U = sol_recibida.ci;
-                    CopiaNodo(&sol_recibida, &mejor_solucion, true); 
+                    CopiaNodo(&sol_recibida, &mejor_solucion, false);
                     printf("[MAESTRO] Nueva Cota Superior Global = %d encontrada por P%d\n", U, origen);
 
                     // Notificación asíncrona de nueva cota a los trabajadores
@@ -207,6 +315,10 @@ int main(int argc, char *argv[]) {
 
         while (!terminar) {
             if (PilaVacia(&pila_local)) {
+                ProbarNuevaCota(&req_cota, &flag_cota_recibida, &buffer_cota_asincrona,
+                                &U, &pila_local, &terminar);
+                if (terminar) break;
+
                 int vacio_peticion = 1;
                 // Enviamos petición usando tipo int estándar para agilizar
                 MPI_Send(&vacio_peticion, 1, MPI_INT, 0, TAG_PIDE_TRAB, MPI_COMM_WORLD);
@@ -222,18 +334,8 @@ int main(int argc, char *argv[]) {
                     terminar = 1; 
                 }
             } else {
-                MPI_Test(&req_cota, &flag_cota_recibida, MPI_STATUS_IGNORE);
-                if (flag_cota_recibida) {
-                    if (buffer_cota_asincrona == -1) {
-                        terminar = 1;
-                    } else if (buffer_cota_asincrona < U) {
-                        U = buffer_cota_asincrona;
-                        PilaAcotar(&pila_local, U); 
-                    }
-                    if (!terminar) {
-                        MPI_Irecv(&buffer_cota_asincrona, 1, MPI_INT, 0, TAG_NUEVA_CS, MPI_COMM_WORLD, &req_cota);
-                    }
-                }
+                ProbarNuevaCota(&req_cota, &flag_cota_recibida, &buffer_cota_asincrona,
+                                &U, &pila_local, &terminar);
 
                 if (terminar) break;
 
