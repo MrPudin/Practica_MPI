@@ -1,0 +1,18 @@
+=== Iniciando trabajo TSP con MPI ===
+Ciudades        : 4
+Slots pedidos   : 2
+Nodo maestro    : compute-0-7.local
+Fecha inicio    : Mon May 18 07:13:25 EDT 2026
+Nodos asignados :
+compute-0-7.local 2 all.q@compute-0-7.local UNDEFINED
+----------------------------------------
+Fichero de maquinas:
+compute-0-7.local
+compute-0-7.local
+----------------------------------------
+
+real	0m0.016s
+user	0m0.008s
+sys	0m0.010s
+----------------------------------------
+Trabajo finalizado: Mon May 18 07:13:25 EDT 2026

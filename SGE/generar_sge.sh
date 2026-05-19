@@ -1,114 +1,126 @@
 #!/bin/bash
 # ---------------------------------------------------------
 # Script para generar múltiples scripts SGE para el estudio
+# de speedup y escalabilidad del TSP paralelo con MPI.
 # Se ejecuta desde el directorio SGE/
 # ---------------------------------------------------------
 
-# Directorio de trabajo (donde esté este script)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJ_DIR="$(dirname "$SCRIPT_DIR")"
-
 cd "$SCRIPT_DIR"
 
-# Tamaños de problema (ciudades)
+# --- Parámetros del estudio ---
 PROBLEMAS=(4 5 10 20 40 50)
-
-# Núcleos a probar
 NUCLEOS=(1 2 4 8 16)
 
-# Ejecutable secuencial (en la raíz del proyecto)
-EXEC_SECUENCIAL="$PROJ_DIR/tspsec"
-
-# Ejecutable paralelo (en la raíz del proyecto)
+EXEC_SECUENCIAL="$PROJ_DIR/tsp_sec"
 EXEC_PARALELO="$PROJ_DIR/tsp_mpi"
-
-# Directorio de resultados en la raíz del proyecto
 RES_DIR="$PROJ_DIR/Resultados"
+EJEMPLOS_DIR="$PROJ_DIR/EjemplosCiudades"
+
 mkdir -p "$RES_DIR"
 
-echo "=== Generando scripts SGE para el estudio ==="
-echo "Proyecto: $PROJ_DIR"
-echo "Problemas: ${PROBLEMAS[@]}"
-echo "Núcleos: ${NUCLEOS[@]}"
-echo "Resultados en: $RES_DIR"
+echo "=== Generando scripts SGE ==="
+echo "Proyecto   : $PROJ_DIR"
+echo "Problemas  : ${PROBLEMAS[*]}"
+echo "Núcleos    : ${NUCLEOS[*]}"
+echo "Resultados : $RES_DIR"
+echo ""
+
+generados=0
+saltados=0
 
 for n_ciudades in "${PROBLEMAS[@]}"; do
-    archivo_matriz="$PROJ_DIR/EjemplosCiudades/tsp${n_ciudades}.1"
+
+    archivo_matriz="$EJEMPLOS_DIR/tsp${n_ciudades}.1"
 
     if [ ! -f "$archivo_matriz" ]; then
         echo "ADVERTENCIA: No existe $archivo_matriz, saltando."
+        ((saltados++))
         continue
     fi
 
     for p in "${NUCLEOS[@]}"; do
+
         if [ "$p" -eq 1 ]; then
-            # --- Versión secuencial ---
+            # ── Versión secuencial ────────────────────────────────
             nombre_job="tspsec_${n_ciudades}"
             script_name="sge_${nombre_job}.sh"
-            output_name="$RES_DIR/tspsec_${n_ciudades}.out"
-            error_name="$RES_DIR/tspsec_${n_ciudades}.err"
+            salida_out="$RES_DIR/tspsec_${n_ciudades}.out"
             salida_txt="$RES_DIR/tspsec_${n_ciudades}.txt"
 
-            cat > "$script_name" <<EOF
+            cat > "$script_name" << SGEOF
 #!/bin/bash
 #$ -N $nombre_job
 #$ -cwd
 #$ -j y
-#$ -o $output_name
-#$ -e $error_name
-
-cd "$PROJ_DIR"
+#$ -o $salida_out
 
 echo "=== Ejecución secuencial TSP ==="
-echo "Ciudades: ${n_ciudades}"
-echo "Ejecutable: $EXEC_SECUENCIAL"
-echo "Archivo: $archivo_matriz"
+echo "Ciudades : $n_ciudades"
+echo "Nodo     : \$(hostname)"
+echo "Fecha    : \$(date)"
+echo "----------------------------------------"
 
-time $EXEC_SECUENCIAL $n_ciudades $archivo_matriz > $salida_txt
+cd $PROJ_DIR
+time $EXEC_SECUENCIAL $n_ciudades $archivo_matriz > $salida_txt 2>&1
 
-echo "=== Ejecución secuencial finalizada ==="
-EOF
+echo "----------------------------------------"
+echo "Ejecución finalizada: \$(date)"
+SGEOF
 
         else
-            # --- Versión paralela MPI ---
+            # ── Versión paralela MPI ──────────────────────────────
             nombre_job="tspmpi_${n_ciudades}_${p}"
             script_name="sge_${nombre_job}.sh"
-            output_name="$RES_DIR/tspmpi_${n_ciudades}_${p}.out"
-            error_name="$RES_DIR/tspmpi_${n_ciudades}_${p}.err"
+            salida_out="$RES_DIR/tspmpi_${n_ciudades}_${p}.out"
             salida_txt="$RES_DIR/tspmpi_${n_ciudades}_${p}.txt"
 
-            cat > "$script_name" <<EOF
+            cat > "$script_name" << SGEOF
 #!/bin/bash
 #$ -N $nombre_job
 #$ -cwd
 #$ -j y
-#$ -o $output_name
-#$ -e $error_name
+#$ -o $salida_out
 #$ -pe mpi $p
 
-cd "$PROJ_DIR"
-
-# Preparar archivo de máquinas para MPICH (como pide tu profesor)
-MPICH_MACHINES=\$TMPDIR/mpich_machines
-cat \$PE_HOSTFILE | awk '{print \$1":\"\$2}' > \$MPICH_MACHINES
-
-echo "=== Iniciando trabajo TSP MPI ==="
-echo "Ciudades: ${n_ciudades}"
-echo "Slots solicitados: \$NSLOTS"
-echo "Nodos asignados por SGE:"
+echo "=== Iniciando trabajo TSP con MPI ==="
+echo "Ciudades        : $n_ciudades"
+echo "Slots pedidos   : \$NSLOTS"
+echo "Nodo maestro    : \$(hostname)"
+echo "Fecha inicio    : \$(date)"
+echo "Nodos asignados :"
 cat \$PE_HOSTFILE
 echo "----------------------------------------"
 
-time mpiexec -f \$MPICH_MACHINES -n \$NSLOTS $EXEC_PARALELO $n_ciudades $archivo_matriz > $salida_txt
+cd $PROJ_DIR
+
+# Generar fichero de máquinas compatible con Hydra (MPICH):
+# Hydra NO soporta "nodo slots=N"; necesita un hostname por linea.
+MPICH_MACHINES=\$TMPDIR/mpich_machines
+awk '{for(i=0;i<\$2;i++) print \$1}' \$PE_HOSTFILE > \$MPICH_MACHINES
+
+echo "Fichero de maquinas:"
+cat \$MPICH_MACHINES
+echo "----------------------------------------"
+
+time mpiexec -machinefile \$MPICH_MACHINES -n \$NSLOTS \
+    $EXEC_PARALELO $n_ciudades $archivo_matriz > $salida_txt 2>&1
 
 echo "----------------------------------------"
-echo "Trabajo ejecutado con \$NSLOTS procesos."
-EOF
+echo "Trabajo finalizado: \$(date)"
+SGEOF
+
         fi
 
         chmod +x "$script_name"
         echo "Generado: $script_name"
+        ((generados++))
+
     done
 done
 
-echo "=== Todos los scripts SGE generados ==="
+echo ""
+echo "=== Resumen ==="
+echo "Scripts generados : $generados"
+echo "Problemas saltados: $saltados"

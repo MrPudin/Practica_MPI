@@ -1,0 +1,11 @@
+=== Ejecución secuencial TSP ===
+Ciudades : 10
+Nodo     : compute-0-0.local
+Fecha    : Mon May 18 13:11:56 CEST 2026
+----------------------------------------
+
+real	0m0.021s
+user	0m0.001s
+sys	0m0.004s
+----------------------------------------
+Ejecución finalizada: Mon May 18 13:11:56 CEST 2026
