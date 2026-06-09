@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) {
         liberarMatriz(tsp_raiz);
         PilaPush(&bolsa, &raiz);
 
-        int objetivo = (num_procs - 1) * 16;
+        int objetivo = (num_procs - 1) * 8;
         if (objetivo > (int)MAXPILA - 1) objetivo = (int)MAXPILA - 1;
         if (objetivo < num_procs - 1)    objetivo = num_procs - 1;
         GenerarBolsaInicial(&bolsa, tsp0, objetivo, &U, &mejores);
