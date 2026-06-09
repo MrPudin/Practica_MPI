@@ -16,9 +16,9 @@
 
 MPI_Datatype MPI_NODO_T;
 
-/* ══════════════════════════════════════════════════════════════════════════
+/*
    TIPO DERIVADO MPI: serializa tNodo como bloque contiguo de bytes.
-══════════════════════════════════════════════════════════════════════════ */
+*/
 void CrearTipoDerivado() {
     int tamano = sizeof(long int) + (2 + NCIUDADES + (NCIUDADES - 2)) * sizeof(int);
     MPI_Type_contiguous(tamano, MPI_BYTE, &MPI_NODO_T);
@@ -55,11 +55,11 @@ void DeserializarNodo(const char *buf, tNodo *destino) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
+/*
    RANKING DE M MEJORES SOLUCIONES
    costes[] ordenado de menor a mayor. costes[M-1] es el umbral de admisión:
-   una solución con coste >= costes[M-1] no puede entrar en el top-M.
-══════════════════════════════════════════════════════════════════════════ */
+   una solución con coste >= costes[M-1] no entra en el top-M.
+ */
 struct tMejores {
     tNodo nodos[M_MEJORES];
     int   costes[M_MEJORES];
@@ -77,8 +77,7 @@ static void inicMejores(tMejores *m) {
 /*
  * Cota de poda = PEOR de las M mejores (costes[M-1]). Mientras no haya M
  * soluciones, INFINITO (no se puede descartar nada todavía).
- * El umbral NO es costes[0]: usar el mejor descartaría candidatos válidos
- * para los puestos 2º y 3º del ranking.
+ * El umbral NO es costes[0] ya que hacerlo descartariamos mejores soluciones
  */
 static int cotaPoda(const tMejores *m) {
     if (m->count < M_MEJORES) return INFINITO;
@@ -86,7 +85,7 @@ static int cotaPoda(const tMejores *m) {
 }
 
 /* Inserta un candidato. Devuelve true si el umbral de admisión bajó
- * (entonces hay que propagar el nuevo U a los workers). */
+ * (entonces se propaga el nuevo U a los workers). */
 static bool insertarMejor(tMejores *m, tNodo *nodo) {
     int ci       = nodo->ci;
     int old_cota = cotaPoda(m);
@@ -119,10 +118,10 @@ static void imprimirMejores(const tMejores *m) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   SIEMBRA INICIAL: expande la pila hasta tener 'objetivo' subproblemas
-   independientes listos para repartir entre los workers.
-══════════════════════════════════════════════════════════════════════════ */
+/*
+   SIEMBRA INICIAL: expansion de la pila para tener los subproblemas preparados
+   para repartir
+ */
 void GenerarBolsaInicial(tPila *pila, int **tsp0, int objetivo,
                          int *U, tMejores *mejores) {
     while (PilaTamanio(pila) < objetivo && !PilaVacia(pila)) {
@@ -167,10 +166,8 @@ static void reactivarOciosos(tPila *pila, bool *ocioso, const bool *vivo,
 }
 
 /* ── Helper del worker ──────────────────────────────────────────────────────
-   Drena (sin bloquear) todas las cotas pendientes del maestro. Sustituye al
-   antiguo mecanismo Irecv + Cancel + Wait: aquí solo se sondea con un tag
-   concreto, lo que elimina por completo ese código frágil y costoso.
-   El valor -1 es el centinela de finalización.
+   Drena (sin bloquear) todas las cotas pendientes del maestro.
+   El valor -1 es de finalización.
 ──────────────────────────────────────────────────────────────────────────── */
 static void drenarCotas(int *U, tPila *pila, int *terminar) {
     int flag;
@@ -185,9 +182,9 @@ static void drenarCotas(int *U, tPila *pila, int *terminar) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
+/*
    MAIN
-══════════════════════════════════════════════════════════════════════════ */
+ */
 int main(int argc, char *argv[]) {
     int mi_rango, num_procs;
 
@@ -221,7 +218,7 @@ int main(int argc, char *argv[]) {
     int    U        = INFINITO;
     double t_inicio = MPI_Wtime();
 
-    /* ════════════════════════════════════════════════════════════════════
+    /*
        MAESTRO (rango 0)
 
        Política del bucle, en orden de prioridad:
@@ -234,7 +231,7 @@ int main(int argc, char *argv[]) {
 
        Clave de rendimiento: el maestro nunca hace busy-polling. Cuando no
        tiene trabajo, bloquea y cede el núcleo a los workers.
-    ════════════════════════════════════════════════════════════════════ */
+    */
     if (mi_rango == 0) {
 
         tMejores mejores;  inicMejores(&mejores);
@@ -363,14 +360,9 @@ int main(int argc, char *argv[]) {
         delete[] ocioso;
         delete[] vivo;
 
-    /* ════════════════════════════════════════════════════════════════════
+    /*
        TRABAJADOR (rangos 1..N-1)
-
-       B&B local sobre su pila. En cada vuelta drena las cotas nuevas con un
-       simple MPI_Iprobe (solapamiento cómputo/comunicación sin Irecv ni
-       Cancel). Cuando se queda sin trabajo, pide otro subproblema y bloquea
-       hasta recibirlo (sin busy-polling).
-    ════════════════════════════════════════════════════════════════════ */
+     */
     } else {
         tPila pila;  PilaInic(&pila);
         int terminar = 0;
@@ -380,15 +372,15 @@ int main(int argc, char *argv[]) {
             if (terminar) break;
 
             if (!PilaVacia(&pila)) {
-                /* ── Un paso de B&B local ─────────────────────────────── */
+
                 tNodo nodo;
                 PilaPop(&pila, &nodo);
                 if (nodo.ci >= U) continue;
 
                 if (Solucion(&nodo)) {
-                    /* No tocar U localmente: el worker no conoce el ranking
-                       M-best del maestro y bajaría U de más, descartando
-                       candidatos válidos. El maestro fija y propaga el U real. */
+                    /* No tocar U localmente (el worker no lo toca ni conoce
+                     * el ranking de soluciones. El maestro fija y propaga el U real. */
+
                     SerializarNodo(&nodo, bufCom);
                     MPI_Send(bufCom, 1, MPI_NODO_T, 0, TAG_SOLUCION, MPI_COMM_WORLD);
                 } else {
